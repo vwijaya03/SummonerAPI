@@ -10,7 +10,7 @@ export class Summoners1700143419682 implements MigrationInterface {
           puuid VARCHAR(255) NOT NULL,
           name VARCHAR(255) NOT NULL,
           profile_icon_id INT NOT NULL,
-          revision_date INT NOT NULL,
+          revision_date BIGINT NOT NULL,
           summoner_level INT NOT NULL
         );
     `);

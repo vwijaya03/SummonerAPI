@@ -27,7 +27,15 @@ export class SummonerService {
     const apiResponse = await axios.get(url, axiosConfig);
     const summonerResponse: Summoner = apiResponse.data;
 
-    console.log('isi summonerResponse', summonerResponse);
+    const existingSummoner = await this.summonerRepository.findOne({
+      where: { puuid: summonerResponse.puuid },
+    });
+
+    if (!existingSummoner) {
+      await this.summonerRepository.save(summonerResponse);
+    }
+
+    console.log(summonerResponse);
     return summonerResponse;
   }
 }

@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'summoners' })
 export class Summoner {
   @PrimaryGeneratedColumn()
   summoner_id: number;
@@ -8,8 +8,8 @@ export class Summoner {
   @Column()
   id: string;
 
-  @Column()
-  account_id: string;
+  @Column({ name: 'account_id' })
+  accountId: string;
 
   @Column()
   puuid: string;
@@ -17,12 +17,12 @@ export class Summoner {
   @Column()
   name: string;
 
-  @Column()
-  profile_icon_id: number;
+  @Column({ name: 'profile_icon_id' })
+  profileIconId: number;
 
-  @Column()
-  revision_date: number;
+  @Column({ name: 'revision_date', type: 'bigint' })
+  revisionDate: bigint;
 
-  @Column()
-  summoner_level: number;
+  @Column({ name: 'summoner_level' })
+  summonerLevel: number;
 }

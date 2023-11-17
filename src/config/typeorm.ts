@@ -12,8 +12,8 @@ const config = {
   password: 'lol',
   database: 'lol',
   schema: 'public',
-  entities: [__dirname + '/**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/**/migrations/*{.ts,.js}'],
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+  migrations: [__dirname + '/../**/migrations/*{.ts,.js}'],
   // autoLoadEntities: true,
   synchronize: true,
 };

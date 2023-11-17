@@ -1,4 +1,4 @@
-export const API_KEY = '';
+export const API_KEY = process.env.RIOT_API_KEY || '';
 export const API = {
   GET_SUMMONER_BY_NAME: '/lol/summoner/v4/summoners/by-name/',
 };
