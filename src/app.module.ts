@@ -6,11 +6,11 @@ import { AppService } from './app.service';
 import { SummonerModule } from './summoner/summoner.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MatchModule } from './match/match.module';
 import typeorm from './config/typeorm';
 
 @Module({
   imports: [
-    SummonerModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [typeorm],
@@ -20,6 +20,8 @@ import typeorm from './config/typeorm';
       useFactory: async (configService: ConfigService) =>
         configService.get('typeorm'),
     }),
+    SummonerModule,
+    MatchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

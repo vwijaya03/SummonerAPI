@@ -25,4 +25,7 @@ export class Summoner {
 
   @Column({ name: 'summoner_level' })
   summonerLevel: number;
+
+  @Column()
+  region: string;
 }

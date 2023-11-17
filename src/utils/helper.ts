@@ -1,8 +1,10 @@
-import { REGION } from './constant';
+import { ROUTING } from './constant';
 
-export function buildApiUrl(region: string, endpoint: string): string {
-  const mappedRegion = REGION[region] || 'na1';
-  const url = `https://${mappedRegion}.api.riotgames.com${endpoint}`;
+export function buildApiUrl(region: string, endpoint: string): any {
+  const routing = ROUTING[region] || ROUTING['NA1'];
 
-  return url;
+  const platformUrl = `https://${routing.platform}${endpoint}`;
+  const regionUrl = `https://${routing.region}${endpoint}`;
+
+  return { platformUrl, regionUrl };
 }

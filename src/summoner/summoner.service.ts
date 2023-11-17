@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Summoner } from './entities/summoner.entity';
 import axios, { AxiosRequestConfig } from 'axios';
 import { buildApiUrl } from '../utils/helper';
@@ -16,26 +16,35 @@ export class SummonerService {
   ) {}
 
   async findSummoner(summonerName: string, region: string) {
-    const endpoint = API.GET_SUMMONER_BY_NAME + summonerName;
-    const axiosConfig: AxiosRequestConfig = {
-      headers: {
-        'X-Riot-Token': API_KEY,
-      },
-    };
+    try {
+      const endpoint = API.GET_SUMMONER_BY_NAME + summonerName;
+      const axiosConfig: AxiosRequestConfig = {
+        headers: {
+          'X-Riot-Token': API_KEY,
+        },
+      };
 
-    const url = buildApiUrl(region, endpoint);
-    const apiResponse = await axios.get(url, axiosConfig);
-    const summonerResponse: Summoner = apiResponse.data;
+      let existingSummoner = await this.summonerRepository.findOne({
+        where: { name: summonerName, region: region },
+      });
 
-    const existingSummoner = await this.summonerRepository.findOne({
-      where: { puuid: summonerResponse.puuid },
-    });
+      if (!existingSummoner) {
+        const routing = buildApiUrl(region, endpoint);
+        const apiResponse = await axios.get(routing.platformUrl, axiosConfig);
+        const summonerResponse: Summoner = apiResponse.data;
+        summonerResponse.region = region;
 
-    if (!existingSummoner) {
-      await this.summonerRepository.save(summonerResponse);
+        await this.summonerRepository.save(summonerResponse);
+        existingSummoner = summonerResponse;
+      }
+
+      console.log(existingSummoner);
+      return existingSummoner;
+    } catch (error: any) {
+      throw new HttpException(
+        `Whoops something went wrong while finding summoner, ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    console.log(summonerResponse);
-    return summonerResponse;
   }
 }

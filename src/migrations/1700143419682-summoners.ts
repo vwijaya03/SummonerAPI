@@ -11,7 +11,8 @@ export class Summoners1700143419682 implements MigrationInterface {
           name VARCHAR(255) NOT NULL,
           profile_icon_id INT NOT NULL,
           revision_date BIGINT NOT NULL,
-          summoner_level INT NOT NULL
+          summoner_level INT NOT NULL,
+          region VARCHAR(30) NOT NULL
         );
     `);
   }
