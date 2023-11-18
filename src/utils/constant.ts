@@ -2,6 +2,7 @@ export const API_KEY = process.env.RIOT_API_KEY || '';
 export const API = {
   GET_SUMMONER_BY_NAME: '/lol/summoner/v4/summoners/by-name/',
   GET_MATCH_IDS_BY_PUUID: '/lol/match/v5/matches/by-puuid/{puuid}/ids',
+  GET_DETAIL_MATCH: '/lol/match/v5/matches/',
 };
 export const ROUTING = {
   NA1: {
@@ -68,4 +69,12 @@ export const ROUTING = {
     platform: 'vn2.api.riotgames.com',
     region: 'sea.api.riotgames.com',
   },
+};
+export const QUEUE_TYPES = {
+  ALL: 0,
+  ARAM: 450,
+  RANKED_SOLO_5x5: 420,
+  RANKED_FLEX_SR: 440,
+  NORMAL_BLIND_PICK: 430,
+  NORMAL_DRAFT_PICK: 400,
 };

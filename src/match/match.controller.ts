@@ -7,8 +7,7 @@ import {
 } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { SummonerService } from '../summoner/summoner.service';
-import { CreateMatchDto } from './dto/create-match.dto';
-import { UpdateMatchDto } from './dto/update-match.dto';
+import { RecentMatchQueryParams } from './dto/match.dto';
 
 @Controller('api/recent-match')
 export class MatchController {
@@ -18,11 +17,13 @@ export class MatchController {
   ) {}
 
   @Get()
-  async getRecentMatch(
-    @Query('summonerName') summonerName: string,
-    @Query('region') region: string,
-  ) {
+  async getRecentMatch(@Query() query: RecentMatchQueryParams) {
     try {
+      if (!query.page) query.page = 1;
+      if (!query.size) query.size = 20;
+      if (!query.queueId) query.queueId = 0;
+
+      const { summonerName, region, queueId, page, size } = query;
       if (!summonerName || !region) {
         throw new HttpException(
           'parameter summonerName or region is empty',
@@ -34,8 +35,11 @@ export class MatchController {
         region,
       );
       const match = await this.matchService.getRecentMatch(
-        summoner.puuid,
+        summoner,
         region,
+        queueId,
+        page,
+        size,
       );
 
       return match;
