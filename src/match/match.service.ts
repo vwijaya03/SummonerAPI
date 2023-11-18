@@ -90,6 +90,7 @@ export class MatchService {
         const selectedPrimaryStyles = selectedPerkStyles.filter(
           (s) => s.description === 'primaryStyle',
         );
+        const championName = currentPlayer?.championName ?? 'not found';
 
         const processedPrimaryStyles = selectedPrimaryStyles.flatMap((item) => {
           // Find the style in the resource array
@@ -120,27 +121,39 @@ export class MatchService {
                 .filter(Boolean) // Filter out null values
             : [];
         });
+        const urlSpellsRaw = `https://ddragon.leagueoflegends.com/cdn/${version[0]}/data/en_US/champion/${championName}.json`;
+        const championSpellsRes = await axios.get(urlSpellsRaw);
+        const championSpells =
+          championSpellsRes?.data?.data[championName]?.spells ?? [];
+        const mappedChampionSpells = championSpells.map((spell) => ({
+          id: spell.id,
+          name: spell.name,
+          description: spell.description,
+        }));
 
         // console.log();
         // console.log('processedPrimaryStyles', JSON.stringify(processedPrimaryStyles, null, 2));
+        // console.log('championSpells', mappedChampionSpells);
         // console.log();
 
         const matchResponse = {
           info: {
+            assists: currentPlayer?.assists ?? -1,
+            championId: currentPlayer?.championId ?? 'not found',
+            championImage: `https://ddragon.leagueoflegends.com/cdn/${version[0]}/img/champion/${currentPlayer?.championName}.png`,
+            championName: championName,
+            csPerminute: totalMinionsKilled / durationInMinutes ?? 0,
+            deaths: currentPlayer?.deaths ?? -1,
             gameCreation: detailMatchResponse?.info?.gameCreation ?? -1,
             gameDuration: detailMatchResponse?.info?.gameDuration ?? -1,
             gameEndTimestamp: detailMatchResponse?.info?.gameEndTimestamp ?? '',
             gameMode: detailMatchResponse?.info?.gameMode ?? '',
             gameName: detailMatchResponse?.info?.gameName ?? '',
-            kills: currentPlayer?.kills ?? -1,
-            deaths: currentPlayer?.deaths ?? -1,
-            assists: currentPlayer?.assists ?? -1,
             kda: currentPlayer?.challenges?.kda ?? -1,
-            championName: currentPlayer?.championName ?? 'not found',
-            championId: currentPlayer?.championId ?? 'not found',
-            championImage: `https://ddragon.leagueoflegends.com/cdn/${version[0]}/img/champion/${currentPlayer?.championName}.png`,
-            csPerminute: totalMinionsKilled / durationInMinutes ?? 0,
+            kills: currentPlayer?.kills ?? -1,
             primaryRunes: processedPrimaryStyles,
+            spells: mappedChampionSpells,
+            win: currentPlayer?.win ?? 'unknown',
           },
           participants:
             participantsMetaInfo?.length > 0 ? participantsMetaInfo : [],
