@@ -1,14 +1,27 @@
 import { readFile } from 'fs/promises';
 import * as Bluebird from 'bluebird';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Inject } from '@nestjs/common';
 import axios, { AxiosRequestConfig } from 'axios';
 import { buildApiUrl } from '../utils/helper';
 import { API, API_KEY } from '../utils/constant';
 import { Summoner } from 'src/summoner/entities/summoner.entity';
+import { Match } from './entities/match.entity';
 import { Rune, Style } from './dto/match.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class MatchService {
+  constructor(
+    @InjectRepository(Match)
+    private matchRepository: Repository<Match>,
+
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
+  ) {}
+
   async getRecentMatch(
     summoner: Summoner,
     region: string,
@@ -53,6 +66,7 @@ export class MatchService {
       // console.log('url', routing.regionUrl, axiosConfig);
       const resourceStylesMap: Map<number, Style> = new Map();
       const runesMap: Map<number, Rune> = new Map();
+      const savedMatchesData = [];
 
       perks.forEach((style) => {
         resourceStylesMap.set(style.id, style);
@@ -151,15 +165,36 @@ export class MatchService {
             gameName: detailMatchResponse?.info?.gameName ?? '',
             kda: currentPlayer?.challenges?.kda ?? -1,
             kills: currentPlayer?.kills ?? -1,
+            matchId: matchId ?? -1,
             primaryRunes: processedPrimaryStyles,
             spells: mappedChampionSpells,
+            summonerId: currentPlayer?.summonerId ?? 'summonerId not found',
+            visionScore: currentPlayer?.visionScore ?? -1,
+            visionScorePerMinute:
+              currentPlayer?.challenges?.visionScorePerMinute ?? -1,
             win: currentPlayer?.win ?? 'unknown',
           },
           participants:
             participantsMetaInfo?.length > 0 ? participantsMetaInfo : [],
         };
 
+        savedMatchesData.push({
+          riot_match_id: matchResponse.info.matchId.toString(),
+          puuid: summoner.puuid,
+          assists: matchResponse.info.assists,
+          championId: matchResponse.info.championId,
+          championName: matchResponse.info.championName,
+          csPerminute: matchResponse.info.csPerminute,
+          deaths: matchResponse.info.deaths,
+          kda: matchResponse.info.kda,
+          kills: matchResponse.info.kills,
+          win: matchResponse.info.win,
+          visionScore: matchResponse.info.visionScore,
+          summonerId: matchResponse.info.summonerId,
+        });
+
         // console.log();
+        // console.log('currentPlayer', JSON.stringify(currentPlayer, null, 2));
         // console.log('detailMatchResponse', JSON.stringify(detailMatchResponse, null, 2));
         // console.log('selectedPrimaryStyles', JSON.stringify(selectedPrimaryStyles, null, 2));
         // console.log();
@@ -170,8 +205,15 @@ export class MatchService {
       // console.log('isi matches', JSON.stringify(matches, null, 2));
       // console.log();
 
-      out['matches'] = matches;
+      await this.matchRepository
+        .createQueryBuilder()
+        .insert()
+        .into(Match)
+        .values(savedMatchesData)
+        .orIgnore()
+        .execute();
 
+      out['matches'] = matches;
       return out;
     } catch (error: any) {
       throw new HttpException(

@@ -15,6 +15,7 @@ export class SummonerService {
   constructor(
     @InjectRepository(Summoner)
     private summonerRepository: Repository<Summoner>,
+
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
   ) {}

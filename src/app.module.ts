@@ -9,6 +9,7 @@ import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { RedisOptions } from './config/redis';
 import typeorm from './config/typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { SummaryModule } from './summary/summary.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     CacheModule.registerAsync(RedisOptions),
     SummonerModule,
     MatchModule,
+    SummaryModule,
   ],
   controllers: [AppController],
   providers: [

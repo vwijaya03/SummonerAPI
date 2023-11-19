@@ -24,12 +24,6 @@ export class MatchController {
       if (!query.queueId) query.queueId = 0;
 
       const { summonerName, region, queueId, page, size } = query;
-      if (!summonerName || !region) {
-        throw new HttpException(
-          'parameter summonerName or region is empty',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
       const summoner = await this.summonerService.findSummoner(
         summonerName,
         region,
