@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
-// import { MatchController } from './controllers/match.controller';
-// import { MatchService } from './services/match.service';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SummonerModule } from './summoner/summoner.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MatchModule } from './match/match.module';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { RedisOptions } from './config/redis';
 import typeorm from './config/typeorm';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -20,10 +21,17 @@ import typeorm from './config/typeorm';
       useFactory: async (configService: ConfigService) =>
         configService.get('typeorm'),
     }),
+    CacheModule.registerAsync(RedisOptions),
     SummonerModule,
     MatchModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // {
+    //   provide: APP_INTERCEPTOR, // Binding the interceptor globally
+    //   useClass: CacheInterceptor,
+    // },
+  ],
 })
 export class AppModule {}
