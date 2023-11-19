@@ -5,7 +5,7 @@ import { CreateSummaryDto, SummaryQueryParams } from './dto/summary.dto';
 import { UpdateSummaryDto } from './dto/update-summary.dto';
 import { MatchService } from '../match/match.service';
 import { SummonerService } from '../summoner/summoner.service';
-import { API, API_KEY } from '../utils/constant';
+import { API, API_KEY, QUEUE_TYPES } from '../utils/constant';
 import axios, { AxiosRequestConfig } from 'axios';
 import { buildApiUrl } from '../utils/helper';
 
@@ -44,6 +44,30 @@ export class SummaryController {
       routing.platformUrl,
       axiosConfig,
     );
+    const queueIds =
+      leaguesResponse?.map((lr) => QUEUE_TYPES[lr.queueType]) ?? [];
+    const matchesAvgCalculation =
+      await this.matchService.getMatchesAvgCalculation(queueIds, summoner.id);
+
+    for (const mac of matchesAvgCalculation) {
+      const matchingLeague = leaguesResponse.find((league) => {
+        const matchingQueueKey = Object.keys(QUEUE_TYPES).find(
+          (key) => QUEUE_TYPES[key] === mac.queue_id,
+        );
+
+        return league.queueType === matchingQueueKey;
+      });
+
+      // console.log('matchingLeague', matchingLeague);
+      if (matchingLeague) {
+        matchingLeague.average_cs_perminute = parseFloat(
+          mac.average_cs_perminute,
+        );
+        matchingLeague.average_vision_score = parseFloat(
+          mac.average_vision_score,
+        );
+      }
+    }
 
     const response = {
       name: summoner.name,
