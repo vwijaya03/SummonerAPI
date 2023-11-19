@@ -21,7 +21,7 @@ export class MatchController {
     try {
       if (!query.page) query.page = 1;
       if (!query.size) query.size = 20;
-      if (!query.queueId) query.queueId = 0;
+      if (!query.queueId) query.queueId = 'RANKED_SOLO_5x5';
 
       const { summonerName, region, queueId, page, size } = query;
       const summoner = await this.summonerService.findSummoner(

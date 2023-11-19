@@ -16,7 +16,8 @@ export class Matches1700376027938 implements MigrationInterface {
           kills INT NOT NULL,
           win BOOL NOT NULL,
           vision_score DECIMAL(10, 2) NOT NULL,
-          summoner_id VARCHAR(255) NOT NULL
+          summoner_id VARCHAR(255) NOT NULL,
+          queue_id INT NOT NULL
         );
     `);
   }

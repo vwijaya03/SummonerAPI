@@ -41,4 +41,7 @@ export class Match {
 
   @Column({ name: 'summoner_id' })
   summonerId: string;
+
+  @Column({ name: 'queue_id' })
+  queueId: number;
 }

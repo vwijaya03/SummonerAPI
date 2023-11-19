@@ -3,7 +3,7 @@ import * as Bluebird from 'bluebird';
 import { HttpException, HttpStatus, Injectable, Inject } from '@nestjs/common';
 import axios, { AxiosRequestConfig } from 'axios';
 import { buildApiUrl } from '../utils/helper';
-import { API, API_KEY } from '../utils/constant';
+import { API, API_KEY, QUEUE_TYPES } from '../utils/constant';
 import { Summoner } from 'src/summoner/entities/summoner.entity';
 import { Match } from './entities/match.entity';
 import { Rune, Style } from './dto/match.dto';
@@ -25,7 +25,7 @@ export class MatchService {
   async getRecentMatch(
     summoner: Summoner,
     region: string,
-    queueId: number,
+    queueId: string,
     page = 1,
     size = 25,
   ): Promise<any> {
@@ -51,7 +51,7 @@ export class MatchService {
         params: {
           start: page,
           count: size,
-          queue: queueId,
+          queue: QUEUE_TYPES[queueId],
         },
       };
       const routing = buildApiUrl(region, endpoint);
@@ -167,6 +167,7 @@ export class MatchService {
             kills: currentPlayer?.kills ?? -1,
             matchId: matchId ?? -1,
             primaryRunes: processedPrimaryStyles,
+            queueId: detailMatchResponse?.info?.queueId ?? -1,
             spells: mappedChampionSpells,
             summonerId: currentPlayer?.summonerId ?? 'summonerId not found',
             visionScore: currentPlayer?.visionScore ?? -1,
@@ -191,13 +192,14 @@ export class MatchService {
           win: matchResponse.info.win,
           visionScore: matchResponse.info.visionScore,
           summonerId: matchResponse.info.summonerId,
+          queueId: matchResponse.info.queueId,
         });
 
-        // console.log();
+        console.log();
         // console.log('currentPlayer', JSON.stringify(currentPlayer, null, 2));
-        // console.log('detailMatchResponse', JSON.stringify(detailMatchResponse, null, 2));
+        console.log('detailMatchResponse', JSON.stringify(detailMatchResponse, null, 2));
         // console.log('selectedPrimaryStyles', JSON.stringify(selectedPrimaryStyles, null, 2));
-        // console.log();
+        console.log();
         return matchResponse;
       });
 
@@ -221,5 +223,11 @@ export class MatchService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async getSummonerId(puuid: string) {
+    const match = await this.matchRepository.findOne({ where: { puuid } });
+
+    return match;
   }
 }

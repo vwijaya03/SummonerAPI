@@ -22,7 +22,7 @@ export class RecentMatchQueryParams {
   region: string;
 
   @IsOptional()
-  queueId: number;
+  queueId: string;
 
   @IsOptional()
   page?: number;

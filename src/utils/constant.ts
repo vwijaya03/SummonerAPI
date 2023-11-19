@@ -3,6 +3,7 @@ export const API = {
   GET_SUMMONER_BY_NAME: '/lol/summoner/v4/summoners/by-name/',
   GET_MATCH_IDS_BY_PUUID: '/lol/match/v5/matches/by-puuid/{puuid}/ids',
   GET_DETAIL_MATCH: '/lol/match/v5/matches/',
+  GET_LEAGUE_ENTRIES_ALL_QUEUE: '/lol/league/v4/entries/by-summoner/',
 };
 export const ROUTING = {
   NA1: {

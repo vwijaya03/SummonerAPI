@@ -22,4 +22,7 @@ export class SummaryQueryParams {
   @IsNotEmpty()
   @IsString()
   region: string;
+
+  @IsOptional()
+  queueId: string;
 }
