@@ -6,9 +6,9 @@ import {
   IsOptional,
   IsInt,
   Min,
-  ValidateIf,
+  Max,
 } from 'class-validator';
-import { Transform, TransformFnParams } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 
 export class RecentMatchQueryParams {
   @IsDefined()
@@ -28,7 +28,9 @@ export class RecentMatchQueryParams {
   page?: number;
 
   @IsOptional()
-  size: number;
+  @Max(20)
+  @Type(() => Number)
+  size?: number;
 }
 
 export class Rune {

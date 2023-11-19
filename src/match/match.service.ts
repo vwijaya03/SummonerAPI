@@ -195,11 +195,11 @@ export class MatchService {
           queueId: matchResponse.info.queueId,
         });
 
-        console.log();
+        // console.log();
         // console.log('currentPlayer', JSON.stringify(currentPlayer, null, 2));
-        console.log('detailMatchResponse', JSON.stringify(detailMatchResponse, null, 2));
+        // console.log('detailMatchResponse', JSON.stringify(detailMatchResponse, null, 2));
         // console.log('selectedPrimaryStyles', JSON.stringify(selectedPrimaryStyles, null, 2));
-        console.log();
+        // console.log();
         return matchResponse;
       });
 

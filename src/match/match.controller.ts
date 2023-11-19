@@ -4,6 +4,7 @@ import {
   Query,
   HttpException,
   HttpStatus,
+  ValidationPipe,
 } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { SummonerService } from '../summoner/summoner.service';
@@ -17,12 +18,14 @@ export class MatchController {
   ) {}
 
   @Get()
-  async getRecentMatch(@Query() query: RecentMatchQueryParams) {
+  async getRecentMatch(
+    @Query(new ValidationPipe()) query: RecentMatchQueryParams,
+  ) {
     try {
       if (!query.page) query.page = 1;
-      if (!query.size) query.size = 20;
+      if (!query.size) query.size = 10;
       if (!query.queueId) query.queueId = 'RANKED_SOLO_5x5';
-
+      console.log('Received queryParams:', query);
       const { summonerName, region, queueId, page, size } = query;
       const summoner = await this.summonerService.findSummoner(
         summonerName,
