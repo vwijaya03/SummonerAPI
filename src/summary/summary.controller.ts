@@ -59,7 +59,7 @@ export class SummaryController {
           region,
           lr.queueType,
           1,
-          3,
+          5,
           0,
         );
       });
