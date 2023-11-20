@@ -37,7 +37,7 @@ export class MatchController {
         queueId,
         page,
         size,
-        1,
+        0,
       );
 
       return match;

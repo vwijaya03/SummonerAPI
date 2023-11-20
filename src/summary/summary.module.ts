@@ -6,9 +6,10 @@ import { Summoner } from '../summoner/entities/summoner.entity';
 import { Match } from '../match/entities/match.entity';
 import { SummonerService } from '../summoner/summoner.service';
 import { MatchService } from '../match/match.service';
+import { League } from './entities/league.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Match, Summoner])],
+  imports: [TypeOrmModule.forFeature([Match, League, Summoner])],
   controllers: [SummaryController],
   providers: [MatchService, SummaryService, SummonerService],
 })

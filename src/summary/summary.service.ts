@@ -1,26 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSummaryDto } from './dto/summary.dto';
-import { UpdateSummaryDto } from './dto/update-summary.dto';
+import { LeagueDTO } from './dto/summary.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { League } from './entities/league.entity';
 
 @Injectable()
 export class SummaryService {
-  create(createSummaryDto: CreateSummaryDto) {
+  constructor(
+    @InjectRepository(League)
+    private leagueRepository: Repository<League>,
+  ) {}
+
+  async save(leagues: LeagueDTO[]) {
+    await this.leagueRepository
+      .createQueryBuilder()
+      .insert()
+      .into(League)
+      .values(leagues)
+      .onConflict(
+        `("summoner_id", "queue_id") DO UPDATE SET "league_points" = EXCLUDED."league_points"`,
+      )
+      .execute();
     return 'This action adds a new summary';
-  }
-
-  findAll() {
-    return `This action returns all summary`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} summary`;
-  }
-
-  update(id: number, updateSummaryDto: UpdateSummaryDto) {
-    return `This action updates a #${id} summary`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} summary`;
   }
 }

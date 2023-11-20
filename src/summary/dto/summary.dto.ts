@@ -26,3 +26,9 @@ export class SummaryQueryParams {
   @IsOptional()
   queueId: string;
 }
+
+export class LeagueDTO {
+  summonerId: string;
+  queueId: number;
+  leaguePoints: number;
+}

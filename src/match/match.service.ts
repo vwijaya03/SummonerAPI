@@ -27,11 +27,11 @@ export class MatchService {
     region: string,
     queueId: string,
     page = 1,
-    size = 20,
-    retry = 1,
+    size = 5,
+    retry = 0,
   ): Promise<any> {
     try {
-      console.log('isi retry', retry);
+      console.log('isi retry', retry, size);
       const versionRaw = await readFile(
         __dirname + '/../../assets/versions.json',
         'utf8',
@@ -263,6 +263,7 @@ export class MatchService {
       .select([
         'ROUND(AVG(cs_perminute), 3) AS average_cs_perminute',
         'ROUND(AVG(vision_score), 3) AS average_vision_score',
+        'ROUND(AVG(kda), 3) AS average_kda',
         'queue_id',
         'summoner_id',
       ])
