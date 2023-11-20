@@ -10,6 +10,7 @@ import { RedisOptions } from './config/redis';
 import typeorm from './config/typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SummaryModule } from './summary/summary.module';
+import { LeaderboardModule } from './leaderboard/leaderboard.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SummaryModule } from './summary/summary.module';
     SummonerModule,
     MatchModule,
     SummaryModule,
+    LeaderboardModule,
   ],
   controllers: [AppController],
   providers: [
