@@ -11,7 +11,6 @@ import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import Bottleneck from 'bottleneck';
 
 @Injectable()
 export class MatchService {
@@ -28,9 +27,11 @@ export class MatchService {
     region: string,
     queueId: string,
     page = 1,
-    size = 25,
+    size = 20,
+    retry = 1,
   ): Promise<any> {
     try {
+      console.log('isi retry', retry);
       const versionRaw = await readFile(
         __dirname + '/../../assets/versions.json',
         'utf8',
@@ -80,137 +81,132 @@ export class MatchService {
         });
       });
 
-      const limiter = new Bottleneck({
-        maxConcurrent: 1, // Number of requests to make concurrently
-        minTime: 150, // Minimum time to wait between requests in milliseconds (to avoid rate limiting)
-      });
-
+      await Bluebird.delay(2000);
       const matches = await Bluebird.map(
         matchIds,
         async (matchId) => {
-          return limiter.schedule(async () => {
-            const endpointDetailMatch = API.GET_DETAIL_MATCH + matchId;
-            const routingDetailMatch = buildApiUrl(region, endpointDetailMatch);
-            const { data: detailMatchResponse } = await axios.get(
-              routingDetailMatch.regionUrl,
-              axiosConfig,
-            );
-            const gameCreationTimestamp =
-              detailMatchResponse?.info?.gameCreation ?? -1;
-            const gameEndTimestamp =
-              detailMatchResponse?.info?.gameEndTimestamp ?? -1;
-            const durationInMilliseconds = gameEndTimestamp - gameCreationTimestamp;
-            const durationInMinutes = durationInMilliseconds / (1000 * 60);
-            const participantsMetaInfo =
-              detailMatchResponse?.metadata?.participants ?? [];
-            const participantsGameInfo = detailMatchResponse?.info?.participants;
-            const currentPlayer =
-              participantsGameInfo?.length > 0
-                ? participantsGameInfo.find((p) => p.puuid === summoner.puuid)
-                : {};
-            const totalMinionsKilled = currentPlayer?.totalMinionsKilled ?? -10;
-            const selectedPerkStyles = currentPlayer?.perks?.styles ?? [];
-            const selectedPrimaryStyles = selectedPerkStyles.filter(
-              (s) => s.description === 'primaryStyle',
-            );
-            const championName = currentPlayer?.championName ?? 'not found';
+          const endpointDetailMatch = API.GET_DETAIL_MATCH + matchId;
+          const routingDetailMatch = buildApiUrl(region, endpointDetailMatch);
+          const { data: detailMatchResponse } = await axios.get(
+            routingDetailMatch.regionUrl,
+            axiosConfig,
+          );
+          const gameCreationTimestamp =
+            detailMatchResponse?.info?.gameCreation ?? -1;
+          const gameEndTimestamp =
+            detailMatchResponse?.info?.gameEndTimestamp ?? -1;
+          const durationInMilliseconds = gameEndTimestamp - gameCreationTimestamp;
+          const durationInMinutes = durationInMilliseconds / (1000 * 60);
+          const participantsMetaInfo =
+            detailMatchResponse?.metadata?.participants ?? [];
+          const participantsGameInfo = detailMatchResponse?.info?.participants;
+          const currentPlayer =
+            participantsGameInfo?.length > 0
+              ? participantsGameInfo.find((p) => p.puuid === summoner.puuid)
+              : {};
+          const totalMinionsKilled = currentPlayer?.totalMinionsKilled ?? -10;
+          const selectedPerkStyles = currentPlayer?.perks?.styles ?? [];
+          const selectedPrimaryStyles = selectedPerkStyles.filter(
+            (s) => s.description === 'primaryStyle',
+          );
+          const championName = currentPlayer?.championName ?? 'not found';
 
-            const processedPrimaryStyles = selectedPrimaryStyles.flatMap((item) => {
-                // Find the style in the resource array
-                const style = resourceStylesMap.get(item.style);
+          const processedPrimaryStyles = selectedPrimaryStyles.flatMap(
+            (item) => {
+              // Find the style in the resource array
+              const style = resourceStylesMap.get(item.style);
 
-                return style
-                  ? item.selections
-                      .map((selection) => {
-                        /*
-                          flatMap to transform
-                          [ { "runes": [{id: 1}] }, { "runes": [{id: 2}] } ] to [ { id: 1 }, { id: 2 } ]
-                        */
-                        const matchingRune = style.slots
-                          .flatMap((slot) => slot.runes)
-                          .find((rune) => rune.id === selection.perk);
+              return style
+                ? item.selections
+                    .map((selection) => {
+                      /*
+                        flatMap to transform
+                        [ { "runes": [{id: 1}] }, { "runes": [{id: 2}] } ] to [ { id: 1 }, { id: 2 } ]
+                      */
+                      const matchingRune = style.slots
+                        .flatMap((slot) => slot.runes)
+                        .find((rune) => rune.id === selection.perk);
 
-                        return matchingRune
-                          ? {
-                              perk: matchingRune.id,
-                              name: matchingRune.name,
-                              shortDescription: matchingRune.shortDesc,
-                              var1: selection.var1,
-                              var2: selection.var2,
-                              var3: selection.var3,
-                            }
-                          : null; // Use null instead of undefined
-                      })
-                      .filter(Boolean) // Filter out null values
-                  : [];
-            });
-            const urlSpellsRaw = `https://ddragon.leagueoflegends.com/cdn/${version[0]}/data/en_US/champion/${championName}.json`;
-            const championSpellsRes = await axios.get(urlSpellsRaw);
-            const championSpells =
-              championSpellsRes?.data?.data[championName]?.spells ?? [];
-            const mappedChampionSpells = championSpells.map((spell) => ({
-              id: spell.id,
-              name: spell.name,
-              description: spell.description,
-            }));
-
-            // console.log();
-            // console.log('processedPrimaryStyles', JSON.stringify(processedPrimaryStyles, null, 2));
-            // console.log('championSpells', mappedChampionSpells);
-            // console.log();
-
-            const matchResponse = {
-              info: {
-                assists: currentPlayer?.assists ?? -1,
-                championId: currentPlayer?.championId ?? 'not found',
-                championImage: `https://ddragon.leagueoflegends.com/cdn/${version[0]}/img/champion/${currentPlayer?.championName}.png`,
-                championName: championName,
-                csPerminute: totalMinionsKilled / durationInMinutes ?? 0,
-                deaths: currentPlayer?.deaths ?? -1,
-                gameCreation: detailMatchResponse?.info?.gameCreation ?? -1,
-                gameDuration: detailMatchResponse?.info?.gameDuration ?? -1,
-                gameEndTimestamp: detailMatchResponse?.info?.gameEndTimestamp ?? '',
-                gameMode: detailMatchResponse?.info?.gameMode ?? '',
-                gameName: detailMatchResponse?.info?.gameName ?? '',
-                kda: currentPlayer?.challenges?.kda ?? -1,
-                kills: currentPlayer?.kills ?? -1,
-                matchId: matchId ?? -1,
-                primaryRunes: processedPrimaryStyles,
-                queueId: detailMatchResponse?.info?.queueId ?? -1,
-                spells: mappedChampionSpells,
-                summonerId: currentPlayer?.summonerId ?? 'summonerId not found',
-                visionScore: currentPlayer?.visionScore ?? -1,
-                visionScorePerMinute:
-                  currentPlayer?.challenges?.visionScorePerMinute ?? -1,
-                win: currentPlayer?.win ?? 'unknown',
-              },
-              participants:
-                participantsMetaInfo?.length > 0 ? participantsMetaInfo : [],
-            };
-
-            savedMatchesData.push({
-              riot_match_id: matchResponse.info.matchId.toString(),
-              puuid: summoner.puuid,
-              assists: matchResponse.info.assists,
-              championId: matchResponse.info.championId,
-              championName: matchResponse.info.championName,
-              csPerminute: matchResponse.info.csPerminute,
-              deaths: matchResponse.info.deaths,
-              kda: matchResponse.info.kda,
-              kills: matchResponse.info.kills,
-              win: matchResponse.info.win,
-              visionScore: matchResponse.info.visionScore,
-              summonerId: matchResponse.info.summonerId,
-              queueId: matchResponse.info.queueId,
-            });
-
-            // console.log();
-            // console.log('currentPlayer', JSON.stringify(currentPlayer, null, 2));
-            // console.log('detailMatchResponse', JSON.stringify(detailMatchResponse, null, 2));
-            // console.log('selectedPrimaryStyles', JSON.stringify(selectedPrimaryStyles, null, 2));
-            // console.log();
-            return matchResponse;
+                      return matchingRune
+                        ? {
+                            perk: matchingRune.id,
+                            name: matchingRune.name,
+                            shortDescription: matchingRune.shortDesc,
+                            var1: selection.var1,
+                            var2: selection.var2,
+                            var3: selection.var3,
+                          }
+                        : null; // Use null instead of undefined
+                    })
+                    .filter(Boolean) // Filter out null values
+                : [];
           });
+          const urlSpellsRaw = `https://ddragon.leagueoflegends.com/cdn/${version[0]}/data/en_US/champion/${championName}.json`;
+          const championSpellsRes = await axios.get(urlSpellsRaw);
+          const championSpells =
+            championSpellsRes?.data?.data[championName]?.spells ?? [];
+          const mappedChampionSpells = championSpells.map((spell) => ({
+            id: spell.id,
+            name: spell.name,
+            description: spell.description,
+          }));
+
+          // console.log();
+          // console.log('processedPrimaryStyles', JSON.stringify(processedPrimaryStyles, null, 2));
+          // console.log('championSpells', mappedChampionSpells);
+          // console.log();
+
+          const matchResponse = {
+            info: {
+              assists: currentPlayer?.assists ?? -1,
+              championId: currentPlayer?.championId ?? 'not found',
+              championImage: `https://ddragon.leagueoflegends.com/cdn/${version[0]}/img/champion/${currentPlayer?.championName}.png`,
+              championName: championName,
+              csPerminute: totalMinionsKilled / durationInMinutes ?? 0,
+              deaths: currentPlayer?.deaths ?? -1,
+              gameCreation: detailMatchResponse?.info?.gameCreation ?? -1,
+              gameDuration: detailMatchResponse?.info?.gameDuration ?? -1,
+              gameEndTimestamp: detailMatchResponse?.info?.gameEndTimestamp ?? '',
+              gameMode: detailMatchResponse?.info?.gameMode ?? '',
+              gameName: detailMatchResponse?.info?.gameName ?? '',
+              kda: currentPlayer?.challenges?.kda ?? -1,
+              kills: currentPlayer?.kills ?? -1,
+              matchId: matchId ?? -1,
+              primaryRunes: processedPrimaryStyles,
+              queueId: detailMatchResponse?.info?.queueId ?? -1,
+              spells: mappedChampionSpells,
+              summonerId: currentPlayer?.summonerId ?? 'summonerId not found',
+              visionScore: currentPlayer?.visionScore ?? -1,
+              visionScorePerMinute:
+                currentPlayer?.challenges?.visionScorePerMinute ?? -1,
+              win: currentPlayer?.win ?? 'unknown',
+            },
+            participants:
+              participantsMetaInfo?.length > 0 ? participantsMetaInfo : [],
+          };
+
+          savedMatchesData.push({
+            riot_match_id: matchResponse.info.matchId.toString(),
+            puuid: summoner.puuid,
+            assists: matchResponse.info.assists,
+            championId: matchResponse.info.championId,
+            championName: matchResponse.info.championName,
+            csPerminute: matchResponse.info.csPerminute,
+            deaths: matchResponse.info.deaths,
+            kda: matchResponse.info.kda,
+            kills: matchResponse.info.kills,
+            win: matchResponse.info.win,
+            visionScore: matchResponse.info.visionScore,
+            summonerId: matchResponse.info.summonerId,
+            queueId: matchResponse.info.queueId,
+          });
+
+          // console.log();
+          // console.log('currentPlayer', JSON.stringify(currentPlayer, null, 2));
+          // console.log('detailMatchResponse', JSON.stringify(detailMatchResponse, null, 2));
+          // console.log('selectedPrimaryStyles', JSON.stringify(selectedPrimaryStyles, null, 2));
+          // console.log();
+          return matchResponse;
         },
         { concurrency: 1 },
       );
@@ -230,10 +226,28 @@ export class MatchService {
       out['matches'] = matches;
       return out;
     } catch (error: any) {
-      throw new HttpException(
-        `Whoops something went wrong while finding recent match, ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error.message.includes('429')) {
+        if (retry > 2) {
+          throw new HttpException(
+            `rate limit exceeded please try again later`,
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
+        }
+        await Bluebird.delay(5000);
+        await this.getRecentMatch(
+          summoner,
+          region,
+          queueId,
+          page,
+          size,
+          retry + 1,
+        );
+      } else {
+        throw new HttpException(
+          `Whoops something went wrong while finding recent match, ${error.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 

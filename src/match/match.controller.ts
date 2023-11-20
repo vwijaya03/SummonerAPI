@@ -25,7 +25,7 @@ export class MatchController {
       if (!query.page) query.page = 1;
       if (!query.size) query.size = 10;
       if (!query.queueId) query.queueId = 'RANKED_SOLO_5x5';
-      console.log('Received queryParams:', query);
+      // console.log('Received queryParams:', query);
       const { summonerName, region, queueId, page, size } = query;
       const summoner = await this.summonerService.findSummoner(
         summonerName,
@@ -37,11 +37,13 @@ export class MatchController {
         queueId,
         page,
         size,
+        1,
       );
 
       return match;
     } catch (error: any) {
-      throw new HttpException(error.message, error.code);
+      console.log(error);
+      throw new HttpException(error.message, error.status);
     }
   }
 }
