@@ -1,24 +1,20 @@
-# Use the official Node.js image
-FROM node:20.9.0
+# Use an official Node runtime as a parent image
+FROM node:16
 
-# Install dependencies for debugging (optional)
-RUN apt-get update && \
-    apt-get install -y redis-tools
+# Set the working directory in the container
+WORKDIR /usr/src/app
 
-# Set the working directory
-WORKDIR /app
-
-# Copy package.json and package-lock.json first to leverage Docker cache
+# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install npm dependencies
+# Install the application dependencies
 RUN npm install
 
-# Copy the rest of the application code
+# Copy the content of the local src directory to the working directory
 COPY . .
 
-# Expose the application port
+# Expose the port on which the app will run
 EXPOSE 3000
 
-# Define the default command to run your application
-CMD ["npm", "run", "start"]
+# Command to run the application
+CMD ["npm", "start"]
