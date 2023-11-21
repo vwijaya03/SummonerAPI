@@ -25,11 +25,7 @@ services:
 
   redis:
     image: redis:latest
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 1s
-      timeout: 2s
-      retries: 10
+    command: ["redis-server", "--bind", "redis", "--port", "6379"]
 
   postgres:
     image: "postgres:16"
