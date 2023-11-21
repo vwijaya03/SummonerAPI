@@ -1,9 +1,4 @@
 FROM node:20.9.0
-
-# Install Redis CLI for debugging (optional)
-RUN apt-get update && \
-    apt-get install -y redis-tools
-
 WORKDIR /app
 
 COPY package*.json ./
@@ -16,4 +11,18 @@ RUN npm run build
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start:dev"]
+# Additional stage for Redis
+FROM redis:latest AS redis
+EXPOSE 6379
+
+# Additional stage for PostgreSQL
+FROM postgres:16 AS postgres
+
+# PostgreSQL environment variables
+ENV POSTGRES_DB lol
+ENV POSTGRES_USER lol
+ENV POSTGRES_PASSWORD lol
+
+EXPOSE 5432
+
+CMD ["npm", "run", "start"]
