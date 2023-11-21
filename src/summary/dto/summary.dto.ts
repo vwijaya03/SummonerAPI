@@ -24,7 +24,7 @@ export class SummaryQueryParams {
   region: string;
 
   @IsOptional()
-  queueId: string;
+  queueId?: string;
 }
 
 export class LeagueDTO {
