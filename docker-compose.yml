@@ -1,7 +1,8 @@
 version: '3'
 
 networks:
-  - default
+  mynetwork:
+    driver: bridge
 
 services:
   lol-integration:
