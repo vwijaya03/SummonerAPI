@@ -1,5 +1,9 @@
 version: '3'
 
+networks:
+  mynetwork:
+    driver: bridge
+    
 services:
   lol-integration:
     build:
@@ -34,9 +38,6 @@ services:
       - 6379:6379
     networks:
       - mynetwork
-    restart: unless-stopped
-    volumes:
-      - redis:/data
 
   postgres:
     image: "postgres:16"
@@ -48,14 +49,3 @@ services:
       POSTGRES_PASSWORD: lol
     networks:
       - mynetwork
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-networks:
-  mynetwork:
-    driver: bridge
-
-volumes:
-  postgres_data: {}
-  redis:
-    driver: local
