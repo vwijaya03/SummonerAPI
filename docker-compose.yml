@@ -12,14 +12,9 @@ services:
     container_name: lol-integration
     ports:
       - 3000:3000
-    links:
-      - redis
     depends_on:
       - postgres
       - redis
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
     environment:
       POSTGRES_DB: lol
       POSTGRES_USER: lol
