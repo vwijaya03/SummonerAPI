@@ -1,14 +1,6 @@
 version: '3'
 
 services:
-  node_app:
-    build: .
-    ports:
-      - "3000:3000"
-    depends_on:
-      - redis
-      - postgres
-
   redis:
     image: "redis:latest"
     ports:
@@ -22,3 +14,18 @@ services:
       POSTGRES_DB: lol
       POSTGRES_USER: lol
       POSTGRES_PASSWORD: lol
+  
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs-app-container
+    environment:
+      - PORT=${PORT}
+    ports:
+      - '3000:3000'
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./src:/app/src
