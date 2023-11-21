@@ -5,15 +5,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nestjs-app-container
+    container_name: api
     ports:
       - 3000:3000
     depends_on:
       - postgres
       - redis
     links:
-      - postgres:postgres
-      - redis:redis
+      - postgres
+      - redis
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
