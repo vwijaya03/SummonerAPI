@@ -10,22 +10,20 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
-      - name: Set date variable
-        run: echo "IMAGE_TAG=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      - name: Login to Docker Hub
+      - name: Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} 
-      - name: Build Docker image
-        run: docker build -t vwijaya08/lol-integration:${{ env.IMAGE_TAG }} .
-      - name: Publish image to Docker Hub
-        run: docker push vwijaya08/lol-integration:${{ env.IMAGE_TAG }}
+      - name: Build docker image
+        run: docker build -t vwijaya08/lol-integration .
+      - name: Publish image to docker hub
+        run: docker push vwijaya08/lol-integration:latest
         
   deploy:
     needs: build
     runs-on: [aws-ec2]
     steps:
-      - name: Pull image from Docker Hub
-        run: docker pull vwijaya08/lol-integration:${{ env.IMAGE_TAG }}
+      - name: Pull image from docker hub
+        run: docker pull vwijaya08/lol-integration:latest
       - name: Delete old container
         run: docker rm -f api
-      - name: Run Docker container
-        run: docker run -d -p 3000:3000 --name api vwijaya08/lol-integration:${{ env.IMAGE_TAG }}
+      - name: Run docker container
+        run: docker run -d -p 3000:3000 --name api vwijaya08/lol-integration:latest
