@@ -24,6 +24,6 @@ jobs:
       - name: Pull image from docker hub
         run: docker pull vwijaya08/lol-integration:latest
       - name: Delete old container
-        run: docker rm -f nodejs-app-container
+        run: docker rm -f nestjs-app-container
       - name: Run docker container
         run: docker run -d -p 3000:3000 --name nestjs-app-container vwijaya08/lol-integration
