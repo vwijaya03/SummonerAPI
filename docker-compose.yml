@@ -26,22 +26,25 @@ services:
       POSTGRES_PASSWORD: lol
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    network_mode: 'host'
     # networks:
     #   - mynetwork
 
   redis:
     image: redis:latest
     command: ["redis-server", "--bind", "redis", "--port", "6379"]
+    network_mode: 'host'
     # networks:
     #   - mynetwork
 
   postgres:
-    image: "postgres:latest"
+    image: "postgres:16"
     ports:
       - 5432:5432
     environment:
       POSTGRES_DB: lol
       POSTGRES_USER: lol
       POSTGRES_PASSWORD: lol
+    network_mode: 'host'
     # networks:
     #   - mynetwork
