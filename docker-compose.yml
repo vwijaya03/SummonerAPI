@@ -12,6 +12,8 @@ services:
     container_name: lol-integration
     ports:
       - 3000:3000
+    links:
+      - redis
     depends_on:
       - postgres
       - redis
@@ -28,16 +30,16 @@ services:
       - mynetwork
 
   redis:
-    image: "redis:latest"
+    image: 'redis:latest'
     ports:
-      - "6379:6379"
+      - 6379:6379
     networks:
       - mynetwork
 
   postgres:
     image: "postgres:latest"
     ports:
-      - "5432:5432"
+      - 5432:5432
     environment:
       POSTGRES_DB: lol
       POSTGRES_USER: lol
