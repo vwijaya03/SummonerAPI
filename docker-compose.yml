@@ -1,8 +1,7 @@
 version: '3'
 
 networks:
-  mynetwork:
-    driver: bridge
+  - default
 
 services:
   lol-integration:
@@ -30,9 +29,13 @@ services:
       - mynetwork
 
   redis:
-    image: 'redis:latest'
+    image: redis
+    container_name: redis
+    hostname: redis
+    environment:
+        - ALLOW_EMPTY_PASSWORD=yes
     ports:
-      - 6379:6379
+        - '6379:6379'
     networks:
       - mynetwork
 
