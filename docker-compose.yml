@@ -1,5 +1,9 @@
 version: '3'
 
+networks:
+  mynetwork:
+    driver: bridge
+
 services:
   lol-integration:
     build:
@@ -22,16 +26,22 @@ services:
       POSTGRES_PASSWORD: lol
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    networks:
+      - mynetwork
 
   redis:
     image: redis:latest
     command: ["redis-server", "--bind", "redis", "--port", "6379"]
+    networks:
+      - mynetwork
 
   postgres:
-    image: "postgres:16"
+    image: "postgres:latest"
     ports:
       - 5432:5432
     environment:
       POSTGRES_DB: lol
       POSTGRES_USER: lol
       POSTGRES_PASSWORD: lol
+    networks:
+      - mynetwork
