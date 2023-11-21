@@ -4,9 +4,9 @@ FROM node:20.9.0
 RUN apt-get update && \
     apt-get install -y redis-tools
 
-WORKDIR /app
-
-COPY package*.json ./
+RUN mkdir /home/ubuntu/app
+WORKDIR /home/ubuntu/app
+COPY . /home/node/app
 
 RUN npm install
 
