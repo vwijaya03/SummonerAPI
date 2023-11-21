@@ -1,9 +1,5 @@
 version: '3'
 
-networks:
-  mynetwork:
-    driver: bridge
-
 services:
   lol-integration:
     build:
@@ -26,33 +22,20 @@ services:
       POSTGRES_PASSWORD: lol
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    networks:
-      - mynetwork
 
   redis:
-    image: 'redis:5.0-alpine'
-    # container_name: redis
-    # hostname: redis
-    # environment:
-    #     - ALLOW_EMPTY_PASSWORD=yes
-    expose:
-      - 6379
-    volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-      - redis-data:/data
-    command:
-      - redis-server
-      - /usr/local/etc/redis/redis.conf
-    networks:
-      - mynetwork
+    image: redis:latest
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 2s
+      retries: 10
 
   postgres:
-    image: "postgres:latest"
+    image: "postgres:16"
     ports:
       - 5432:5432
     environment:
       POSTGRES_DB: lol
       POSTGRES_USER: lol
       POSTGRES_PASSWORD: lol
-    networks:
-      - mynetwork
