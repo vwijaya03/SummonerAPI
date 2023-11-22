@@ -1,6 +1,3 @@
-FROM postgres:16
-COPY init.sql /docker-entrypoint-initdb.d/
-
 # Use an official Node runtime as a parent image
 FROM node:16
 
