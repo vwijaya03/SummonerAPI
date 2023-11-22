@@ -1,24 +1,24 @@
 version: '3'
 
 services:
-  redis:
-    image: redis:5.0.3-alpine
-    restart: always
-    expose:
-      - '6379'
-    ports:
-      - '6379:6379'
+  # redis:
+  #   image: redis:5.0.3-alpine
+  #   restart: always
+  #   expose:
+  #     - '6379'
+  #   ports:
+  #     - '6379:6379'
 
-  postgres:
-    image: "postgres:16"
-    container_name: postgres
-    ports:
-      - 5432:5432
-    network_mode: bridge
-    environment:
-      POSTGRES_DB: lol
-      POSTGRES_USER: lol
-      POSTGRES_PASSWORD: lol
+  # postgres:
+  #   image: "postgres:16"
+  #   container_name: postgres
+  #   ports:
+  #     - 5432:5432
+  #   network_mode: bridge
+  #   environment:
+  #     POSTGRES_DB: lol
+  #     POSTGRES_USER: lol
+  #     POSTGRES_PASSWORD: lol
     # networks:
     #   - mynetwork
     # volumes:
@@ -28,22 +28,24 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: development
     container_name: lol-integration
-    restart: unless-stopped
-    network_mode: bridge
     ports:
       - 3000:3000
     volumes:
       - .:/src
       - /src/node_modules
-    links:
-      - redis:redis
-      - postgres:postgres
+    env_file:
+      - .env
+    command: npm run start:dev
+    # links:
+    #   - redis:redis
+    #   - postgres:postgres
     # links:
     #   - redis
-    # depends_on:
-    #   - postgres
-    #   - redis
+    depends_on:
+      - redis
+      - postgres
     # volumes:
     #   - .:/usr/src/app
     #   - /usr/src/app/node_modules
@@ -56,6 +58,20 @@ services:
     # networks:
     #   - mynetwork
 
+  redis: # Name of container
+    image: redis
+    ports:
+      - 6379:6379
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '5432:5432'
   # redis:
   #   container_name: redis-db
   #   image: redis
