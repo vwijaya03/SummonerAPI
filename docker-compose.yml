@@ -19,11 +19,15 @@ services:
       - postgres
     links:
       - redis
+    networks:
+      - mynetwork
 
   redis: # Name of container
     image: redis
     ports:
       - 6379:6379
+    networks:
+      - mynetwork
 
   postgres:
     image: postgres
@@ -34,3 +38,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - '5432:5432'
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
