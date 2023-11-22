@@ -16,8 +16,9 @@ services:
       - .env
     command: npm run start:dev
     depends_on:
-      - redis
       - postgres
+    links:
+      - redis
 
   redis: # Name of container
     image: redis
