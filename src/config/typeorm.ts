@@ -6,7 +6,7 @@ dotenvConfig({ path: '.env' });
 
 const config = {
   type: 'postgres',
-  host: 'postgres',
+  host: '172.31.3.180',
   port: 5432,
   username: 'lol',
   password: 'lol',
