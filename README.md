@@ -26,6 +26,41 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Init Docker Pull
+```bash
+$ docker pull redis
+$ docker run -d -p 6379:6379 --name redis redis
+
+# Because docker network is a bit unique, for my case i need to set redis & postgresql host to: [Private IPv4 addresses 172.x.x.x] (AWS EC2)
+# const store = await redisStore({
+#   socket: {
+#     host: process.env.REDIS_HOST,
+#     port: Number(process.env.REDIS_PORT || 6379),
+#   },
+# });
+
+$ docker pull postgres
+$ docker run -d -p 5432:5432 --name postgres postgres
+$ docker run -d \
+  --name [postgres-container] \
+  -e POSTGRES_USER=myuser \
+  -e POSTGRES_PASSWORD=mypassword \
+  -e POSTGRES_DB=mydatabase \
+  -p 5432:5432 \
+  postgres:latest
+```
+
+## Access PSql
+```bash
+$ docker exec -it [container_id / container_name] psql -U my_user -d my_db --password
+$ docker exec -it [container_id / container_name] psql -U my_user
+```
+
+## Running Docker Image With env
+``` bash
+$ docker run --env API_KEY="YOUR_API_KEY_1" --env API_KEY_2="YOUR_API_KEY_2" -d -p 3000:3000 --name [docker-hub-repository-name] [image-from-docker-hub]
+```
+
 ## Installation
 
 ```bash
