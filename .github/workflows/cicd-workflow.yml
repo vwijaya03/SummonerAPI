@@ -10,22 +10,25 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
-      - name: Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} 
-      - name: Build docker image
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker image
         run: docker build -t vwijaya08/lol-integration .
-      - name: Publish image to docker hub
+      - name: Publish image to Docker Hub
         run: docker push vwijaya08/lol-integration:latest
         
   deploy:
     needs: build
-    runs-on: [aws-ec2]
+    runs-on: [ubuntu-latest]
     steps:
-      - name: Pull image from docker hub
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Pull Docker image
         run: docker pull vwijaya08/lol-integration:latest
-      - name: Delete old container
-        run: docker rm -f lol-integration
-      - name: Run docker-compose up -d
-        run: docker-compose up -d
-      - name: Run docker container
+
+      - name: Stop and Remove old container (if exists)
+        run: docker stop lol-integration || true && docker rm lol-integration || true
+
+      - name: Run Docker container
         run: docker run -d -p 3000:3000 --name lol-integration vwijaya08/lol-integration
