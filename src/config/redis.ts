@@ -6,7 +6,9 @@ export const RedisOptions: CacheModuleAsyncOptions = {
   isGlobal: true,
   imports: [ConfigModule],
   useFactory: async (configService: ConfigService) => {
-    const store = await redisStore({ url: 'redis://redis:6379' });
+    const store = await redisStore({
+      url: 'redis://redis:6379/0',
+    });
     return {
       store: () => store,
     };

@@ -2,12 +2,12 @@ version: '3'
 
 services:
   redis:
-    image: redis:6.2-alpine
-    container_name: redis
-    restart: unless-stopped
-    network_mode: bridge
+    image: redis:5.0.3-alpine
+    restart: always
     expose:
-      - 6379
+      - '6379'
+    ports:
+      - '6379:6379'
 
   postgres:
     image: "postgres:16"
@@ -37,8 +37,8 @@ services:
       - .:/src
       - /src/node_modules
     links:
-      - redis
-      - postgres
+      - redis:redis
+      - postgres:postgres
     # links:
     #   - redis
     # depends_on:
