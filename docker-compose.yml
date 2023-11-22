@@ -1,29 +1,6 @@
 version: '3'
 
 services:
-  # redis:
-  #   image: redis:5.0.3-alpine
-  #   restart: always
-  #   expose:
-  #     - '6379'
-  #   ports:
-  #     - '6379:6379'
-
-  # postgres:
-  #   image: "postgres:16"
-  #   container_name: postgres
-  #   ports:
-  #     - 5432:5432
-  #   network_mode: bridge
-  #   environment:
-  #     POSTGRES_DB: lol
-  #     POSTGRES_USER: lol
-  #     POSTGRES_PASSWORD: lol
-    # networks:
-    #   - mynetwork
-    # volumes:
-    #   - postgres_data:/var/lib/postgresql/data
-
   lol-integration:
     build:
       context: .
@@ -38,25 +15,9 @@ services:
     env_file:
       - .env
     command: npm run start:dev
-    # links:
-    #   - redis:redis
-    #   - postgres:postgres
-    # links:
-    #   - redis
     depends_on:
       - redis
       - postgres
-    # volumes:
-    #   - .:/usr/src/app
-    #   - /usr/src/app/node_modules
-    # environment:
-    #   POSTGRES_DB: lol
-    #   POSTGRES_USER: lol
-    #   POSTGRES_PASSWORD: lol
-    #   REDIS_HOST: redis-db  # Use the container name
-    #   REDIS_PORT: 6379
-    # networks:
-    #   - mynetwork
 
   redis: # Name of container
     image: redis
@@ -72,15 +33,3 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - '5432:5432'
-  # redis:
-  #   container_name: redis-db
-  #   image: redis
-
-# networks:
-#   mynetwork:
-#     driver: bridge
-
-# volumes:
-#   postgres_data: {}
-#   redis:
-#     driver: local
