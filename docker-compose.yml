@@ -30,7 +30,7 @@ services:
       - mynetwork
 
   postgres:
-    image: postgres
+    image: postgres:16
     restart: always
     environment:
       - POSTGRES_DB=lol
