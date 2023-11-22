@@ -1,59 +1,70 @@
 version: '3'
 
 services:
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    restart: unless-stopped
+    network_mode: bridge
+    expose:
+      - 6379
+
+  postgres:
+    image: "postgres:16"
+    container_name: postgres
+    ports:
+      - 5432:5432
+    network_mode: bridge
+    environment:
+      POSTGRES_DB: lol
+      POSTGRES_USER: lol
+      POSTGRES_PASSWORD: lol
+    # networks:
+    #   - mynetwork
+    # volumes:
+    #   - postgres_data:/var/lib/postgresql/data
+
   lol-integration:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: lol-integration
+    restart: unless-stopped
+    network_mode: bridge
     ports:
       - 3000:3000
+    volumes:
+      - .:/src
+      - /src/node_modules
     links:
       - redis
-    depends_on:
       - postgres
-      - redis
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    environment:
-      POSTGRES_DB: lol
-      POSTGRES_USER: lol
-      POSTGRES_PASSWORD: lol
-      REDIS_HOST: redis-db  # Use the container name
-      REDIS_PORT: 6379
-    networks:
-      - mynetwork
+    # links:
+    #   - redis
+    # depends_on:
+    #   - postgres
+    #   - redis
+    # volumes:
+    #   - .:/usr/src/app
+    #   - /usr/src/app/node_modules
+    # environment:
+    #   POSTGRES_DB: lol
+    #   POSTGRES_USER: lol
+    #   POSTGRES_PASSWORD: lol
+    #   REDIS_HOST: redis-db  # Use the container name
+    #   REDIS_PORT: 6379
+    # networks:
+    #   - mynetwork
 
-  redis:
-    container_name: redis-db
-    image: redis
-    environment:
-      - REDIS_PORT=6379
-    volumes:
-      - redis:/data
-    networks:
-      - mynetwork
-    restart: unless-stopped
+  # redis:
+  #   container_name: redis-db
+  #   image: redis
 
-  postgres:
-    image: "postgres:16"
-    ports:
-      - 5432:5432
-    environment:
-      POSTGRES_DB: lol
-      POSTGRES_USER: lol
-      POSTGRES_PASSWORD: lol
-    networks:
-      - mynetwork
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+# networks:
+#   mynetwork:
+#     driver: bridge
 
-networks:
-  mynetwork:
-    driver: bridge
-
-volumes:
-  postgres_data: {}
-  redis:
-    driver: local
+# volumes:
+#   postgres_data: {}
+#   redis:
+#     driver: local
