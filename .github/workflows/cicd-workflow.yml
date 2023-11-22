@@ -25,5 +25,7 @@ jobs:
         run: docker pull vwijaya08/lol-integration:latest
       - name: Delete old container
         run: docker rm -f lol-integration
+      - name: Run docker-compose up -d
+        run: docker-compose up -d
       - name: Run docker container
         run: docker run -d -p 3000:3000 --name lol-integration vwijaya08/lol-integration
