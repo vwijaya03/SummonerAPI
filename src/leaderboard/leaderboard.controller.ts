@@ -33,8 +33,8 @@ export class LeaderboardController {
       winRateRank = refreshedWinRateRank;
     }
     const out = {
-      leaguePoints: { top: leaguePointRank },
-      winRate: { top: winRateRank },
+      leaguePoints: { top: Number(leaguePointRank) },
+      winRate: { top: Number(winRateRank) },
     };
 
     return out;
@@ -50,8 +50,8 @@ export class LeaderboardController {
     const winRateRank = leaderboardResult?.winLeaderboard?.[0]?.rank ?? -1;
 
     return {
-      refreshedLeaguePointRank: leaguePointRank,
-      refreshedWinRateRank: winRateRank,
+      refreshedLeaguePointRank: Number(leaguePointRank),
+      refreshedWinRateRank: Number(winRateRank),
     };
   }
 }
