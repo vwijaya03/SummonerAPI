@@ -8,8 +8,11 @@ import {
 } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { SummonerService } from '../summoner/summoner.service';
-import { RecentMatchQueryParams } from './dto/match.dto';
+import { RecentMatchQueryParams, RecentMatchResponseExample } from './dto/match.dto';
+import { ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { QUEUE_TYPES } from '../utils/constant';
 
+@ApiTags('API List')
 @Controller('api/recent-match')
 export class MatchController {
   constructor(
@@ -17,6 +20,41 @@ export class MatchController {
     private readonly matchService: MatchService,
   ) {}
 
+  @ApiOperation({
+    summary: 'Get Recent Matches Of Summoner',
+    description: 'Get recent matches of summoner',
+  })
+  @ApiQuery({
+    name: 'summonerName',
+    description: 'Summoner name from leaderboards',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'region',
+    description: 'Region of summoner from leaderboards',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'page of list recent matches summoner',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'size',
+    description: 'size of data recent matches of summoner',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'queueId',
+    description: 'Queue Id / types of matches',
+    enum: Object.keys(QUEUE_TYPES),
+    required: false,
+  })
+  @ApiOkResponse({ type: RecentMatchResponseExample })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved the recent matches of summoner',
+  })
   @Get()
   async getRecentMatch(
     @Query(new ValidationPipe()) query: RecentMatchQueryParams,

@@ -1,8 +1,11 @@
 import { readFile } from 'fs/promises';
-import { Controller, Get, Query, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { SummaryService } from './summary.service';
-import { LeagueDTO, SummaryQueryParams } from './dto/summary.dto';
-import { UpdateSummaryDto } from './dto/update-summary.dto';
+import {
+  LeagueDTO,
+  SummaryQueryParams,
+  SummaryResponseExample,
+} from './dto/summary.dto';
 import { MatchService } from '../match/match.service';
 import { SummonerService } from '../summoner/summoner.service';
 import { API, API_KEY, QUEUE_TYPES } from '../utils/constant';
@@ -10,7 +13,15 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { buildApiUrl } from '../utils/helper';
 import { Promise } from 'bluebird';
 import { League } from './entities/league.entity';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('API List')
 @Controller('api/summary')
 export class SummaryController {
   constructor(
@@ -19,6 +30,31 @@ export class SummaryController {
     private readonly summaryService: SummaryService,
   ) {}
 
+  @ApiOperation({
+    summary: 'Get Summary Of Summoner',
+    description: 'Get summoner name, profile images, and league points',
+  })
+  @ApiQuery({
+    name: 'summonerName',
+    description: 'Summoner name from leaderboards',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'region',
+    description: 'Region of summoner from leaderboards',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'queueId',
+    description: 'Queue Id / types of matches',
+    enum: Object.keys(QUEUE_TYPES),
+    required: false,
+  })
+  @ApiOkResponse({ type: SummaryResponseExample })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved the summary of summoner',
+  })
   @Get()
   async getSummary(@Query() query: SummaryQueryParams) {
     if (!query.queueId) query.queueId = '';

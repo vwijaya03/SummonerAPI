@@ -26,7 +26,7 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Init Docker Pull
+## Init Docker Setup
 ```bash
 $ docker pull redis
 $ docker run -d -p 6379:6379 --name redis redis
@@ -50,15 +50,17 @@ $ docker run -d \
   postgres:latest
 ```
 
+## Running Docker Image With env
+``` bash
+$ these secrets are from github secret variable
+
+$ docker run -e API_KEY=${{ secrets.API_KEY }} -e POSTGRES_HOST=${{ secrets.YOUR_HOST }} -d -p 3000:3000 --name [docker-hub-repository-name] [image-from-docker-hub]
+```
+
 ## Access PSql
 ```bash
 $ docker exec -it [container_id / container_name] psql -U my_user -d my_db --password
 $ docker exec -it [container_id / container_name] psql -U my_user
-```
-
-## Running Docker Image With env
-``` bash
-$ docker run --env API_KEY="YOUR_API_KEY_1" --env API_KEY_2="YOUR_API_KEY_2" -d -p 3000:3000 --name [docker-hub-repository-name] [image-from-docker-hub]
 ```
 
 ## Installation
