@@ -31,4 +31,4 @@ jobs:
         run: docker stop lol-integration || true && docker rm lol-integration || true
 
       - name: Run Docker container
-        run: docker run --env RIOT_API_KEY=${{ secrets.RIOT_API_KEY }} -d -p 3000:3000 --name lol-integration vwijaya08/lol-integration
+        run: docker run --env RIOT_API_KEY=${{ secrets.RIOT_API_KEY }} -e POSTGRES_HOST=${{ secrets.PRIVATE_IP_V4_EC2 }} -d -p 3000:3000 --name lol-integration vwijaya08/lol-integration
