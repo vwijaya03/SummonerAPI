@@ -29,9 +29,9 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
     SummaryModule,
     LeaderboardModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
+    // AppService,
     // {
     //   provide: APP_INTERCEPTOR, // Binding the interceptor globally
     //   useClass: CacheInterceptor,
