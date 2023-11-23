@@ -1,13 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SummonerService } from './summoner.service';
-import { Summoner } from './entities/summoner.entity';
+import { SummonerService } from '../summoner/summoner.service';
+import { Summoner } from '../summoner/entities/summoner.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from '../config/typeorm';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { SummonerController } from './summoner.controller';
+import { MatchController } from './match.controller';
+import { MatchService } from './match.service';
+import { Match } from './entities/match.entity';
 
 const mockCacheManager = {
   set: jest.fn(),
@@ -17,8 +19,9 @@ const mockCacheManager = {
 };
 let app: INestApplication;
 
-describe('Summoner Integration Test', () => {
+describe('LeaderboardController', () => {
   let summonerService: SummonerService;
+  let matchService: MatchService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -32,10 +35,11 @@ describe('Summoner Integration Test', () => {
           useFactory: async (configService: ConfigService) =>
             configService.get('typeorm'),
         }),
-        TypeOrmModule.forFeature([Summoner]),
+        TypeOrmModule.forFeature([Match, Summoner]),
       ],
-      controllers: [SummonerController],
+      controllers: [MatchController],
       providers: [
+        MatchService,
         SummonerService,
         {
           provide: CACHE_MANAGER,
@@ -46,6 +50,7 @@ describe('Summoner Integration Test', () => {
     app = module.createNestApplication();
     await app.init();
 
+    matchService = module.get<MatchService>(MatchService);
     summonerService = module.get<SummonerService>(SummonerService);
   });
 
@@ -53,22 +58,34 @@ describe('Summoner Integration Test', () => {
     await app.close();
   });
 
-  xit('should have same keys between body and summoner service', async () => {
+  xit('should have matches with info kill, death, assist', async () => {
     const summonerName = 'Amazo';
     const region = 'NA1';
 
-    const summoner = await summonerService.findSummoner(summonerName, region);
-
     const { body } = await request
       .agent(app.getHttpServer())
-      .get('/api/summoner')
-      .query({ summonerName: 'yourSummonerName', region: 'yourRegion' })
+      .get('/api/recent-match')
+      .query({
+        summonerName,
+        region,
+        page: 1,
+        size: 5,
+        queueId: 'RANKED_SOLO_5x5',
+      })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
 
-    expect(Object.keys(body)).toEqual(
-      expect.arrayContaining(Object.keys(summoner)),
-    );
-  });
+    expect(body).toBeDefined();
+    expect(body).toHaveProperty('matches');
+    expect(Array.isArray(body.matches)).toBe(true);
+
+    body.matches.forEach((match) => {
+      expect(match).toHaveProperty('info');
+      expect(typeof match.info).toBe('object');
+      expect(match.info).toHaveProperty('kills', expect.any(Number));
+      expect(match.info).toHaveProperty('deaths', expect.any(Number));
+      expect(match.info).toHaveProperty('assists', expect.any(Number));
+    });
+  }, 10000);
 });

@@ -12,7 +12,7 @@ export class SummaryService {
   ) {}
 
   async save(leagues: LeagueDTO[]) {
-    await this.leagueRepository
+    return this.leagueRepository
       .createQueryBuilder()
       .insert()
       .into(League)
@@ -21,6 +21,5 @@ export class SummaryService {
         `("summoner_id", "queue_id") DO UPDATE SET "league_points" = EXCLUDED."league_points"`,
       )
       .execute();
-    return 'This action adds a new summary';
   }
 }

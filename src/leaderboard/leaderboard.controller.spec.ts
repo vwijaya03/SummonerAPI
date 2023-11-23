@@ -1,13 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SummonerService } from './summoner.service';
-import { Summoner } from './entities/summoner.entity';
+import { LeaderboardService } from './leaderboard.service';
+import { SummonerService } from '../summoner/summoner.service';
+import { SummaryService } from '../summary/summary.service';
+import { MatchService } from '../match/match.service';
+import { Summoner } from '../summoner/entities/summoner.entity';
+import { League } from '../summary/entities/league.entity';
+import { Match } from '../match/entities/match.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from '../config/typeorm';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { SummonerController } from './summoner.controller';
+import { LeaderboardController } from './leaderboard.controller';
+import { SummaryController } from '../summary/summary.controller';
 
 const mockCacheManager = {
   set: jest.fn(),
@@ -17,7 +23,7 @@ const mockCacheManager = {
 };
 let app: INestApplication;
 
-describe('Summoner Integration Test', () => {
+describe('Leaderboard Integration Test', () => {
   let summonerService: SummonerService;
 
   beforeEach(async () => {
@@ -32,11 +38,15 @@ describe('Summoner Integration Test', () => {
           useFactory: async (configService: ConfigService) =>
             configService.get('typeorm'),
         }),
-        TypeOrmModule.forFeature([Summoner]),
+        TypeOrmModule.forFeature([Summoner, Match, League]),
       ],
-      controllers: [SummonerController],
+      controllers: [LeaderboardController],
       providers: [
+        LeaderboardService,
+        SummaryService,
+        MatchService,
         SummonerService,
+        SummaryController,
         {
           provide: CACHE_MANAGER,
           useValue: mockCacheManager,
@@ -53,22 +63,24 @@ describe('Summoner Integration Test', () => {
     await app.close();
   });
 
-  xit('should have same keys between body and summoner service', async () => {
-    const summonerName = 'Amazo';
-    const region = 'NA1';
-
-    const summoner = await summonerService.findSummoner(summonerName, region);
-
+  xit('should have win rate and league point rank', async () => {
     const { body } = await request
       .agent(app.getHttpServer())
-      .get('/api/summoner')
-      .query({ summonerName: 'yourSummonerName', region: 'yourRegion' })
+      .get('/api/leaderboard/Amazo/NA1')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
 
-    expect(Object.keys(body)).toEqual(
-      expect.arrayContaining(Object.keys(summoner)),
+    console.log(body);
+    expect(body).toEqual(
+      expect.objectContaining({
+        leaguePoints: expect.objectContaining({
+          top: expect.any(Number),
+        }),
+        winRate: expect.objectContaining({
+          top: expect.any(Number),
+        }),
+      }),
     );
   });
 });

@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SummonerService } from './summoner.service';
-import { Summoner } from './entities/summoner.entity';
+import { LeaderboardService } from './leaderboard.service';
+import { SummonerService } from '../summoner/summoner.service';
+import { Summoner } from '../summoner/entities/summoner.entity';
+import { League } from '../summary/entities/league.entity';
+import { Match } from '../match/entities/match.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -13,8 +16,9 @@ const mockCacheManager = {
   reset: jest.fn(),
 };
 
-describe('Summoner Unit Test', () => {
+describe('Leaderboard Unit Test', () => {
   let summonerService: SummonerService;
+  let leaderboardService: LeaderboardService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -28,11 +32,12 @@ describe('Summoner Unit Test', () => {
           useFactory: async (configService: ConfigService) =>
             configService.get('typeorm'),
         }),
-        TypeOrmModule.forFeature([Summoner]),
+        TypeOrmModule.forFeature([Summoner, Match, League]),
       ],
       controllers: [],
       providers: [
         SummonerService,
+        LeaderboardService,
         {
           provide: CACHE_MANAGER,
           useValue: mockCacheManager,
@@ -41,21 +46,16 @@ describe('Summoner Unit Test', () => {
     }).compile();
 
     summonerService = module.get<SummonerService>(SummonerService);
+    leaderboardService = module.get<LeaderboardService>(LeaderboardService);
   });
 
-  xit('should have spesified keys', async () => {
+  xit('should have leaderboard', async () => {
     const summonerName = 'Amazo';
     const region = 'NA1';
 
     const summoner = await summonerService.findSummoner(summonerName, region);
+    const leaderboard = await leaderboardService.getLeaderboard(summoner);
 
-    expect(summoner).toEqual(
-      expect.objectContaining({
-        id: expect.any(String),
-        name: expect.any(String),
-        profileIconId: expect.any(Number),
-        puuid: expect.any(String),
-      }),
-    );
+    expect(leaderboard).toBeDefined();
   });
 });
