@@ -79,3 +79,6 @@ export const QUEUE_TYPES = {
   NORMAL_BLIND_PICK: 430,
   NORMAL_DRAFT_PICK: 400,
 };
+export type MockType<T> = {
+  [P in keyof T]?: jest.Mock<object>;
+};
